@@ -12,6 +12,8 @@ import { SecureMerkleTrie } from "../libraries/trie/SecureMerkleTrie.sol";
 import { AddressAliasHelper } from "../vendor/AddressAliasHelper.sol";
 import { ResourceMetering } from "./ResourceMetering.sol";
 import { Semver } from "../universal/Semver.sol";
+//@p2perc20rollup be able to use ERC20 
+import { ERC20 } from "@rari-capital/solmate/src/tokens/ERC20.sol";  
 
 /**
  * @custom:proxied
@@ -81,6 +83,12 @@ contract OptimismPortal is Initializable, ResourceMetering, Semver {
      *         withdrawals are paused. This may be removed in the future.
      */
     bool public paused;
+
+    /**
+     * @notice Address of the ERC20 token that is native to L2.
+     */
+     //@p2perc20rollup
+    ERC20 public nativeL2Token;
 
     /**
      * @notice Emitted when a transaction is deposited from L1 to L2. The parameters of this event
@@ -157,6 +165,9 @@ contract OptimismPortal is Initializable, ResourceMetering, Semver {
         GUARDIAN = _guardian;
         SYSTEM_CONFIG = _config;
         initialize(_paused);
+        //@p2perc20rollup set nativeL2Token to the ERC20 token that is native to L2
+        //TODO set this dynamically
+        nativeL2Token = ERC20(0xa411c9Aa00E020e4f88Bc19996d29c5B7ADB4ACf);
     }
 
     /**
@@ -203,10 +214,11 @@ contract OptimismPortal is Initializable, ResourceMetering, Semver {
      *         function for EOAs. Contracts should call the depositTransaction() function directly
      *         otherwise any deposited funds will be lost due to address aliasing.
      */
+     //@p2perc20rollup disabling native transfer to the contract
     // solhint-disable-next-line ordering
-    receive() external payable {
-        depositTransaction(msg.sender, msg.value, RECEIVE_DEFAULT_GAS_LIMIT, false, bytes(""));
-    }
+    // receive() external payable {
+    //     depositTransaction(msg.sender, msg.value, RECEIVE_DEFAULT_GAS_LIMIT, false, bytes(""));
+    // }
 
     /**
      * @notice Accepts ETH value without triggering a deposit to L2. This function mainly exists
@@ -402,7 +414,13 @@ contract OptimismPortal is Initializable, ResourceMetering, Semver {
         //   2. The amount of gas provided to the execution context of the target is at least the
         //      gas limit specified by the user. If there is not enough gas in the current context
         //      to accomplish this, `callWithMinGas` will revert.
-        bool success = SafeCall.callWithMinGas(_tx.target, _tx.gasLimit, _tx.value, _tx.data);
+        // bool success = SafeCall.callWithMinGas(_tx.target, _tx.gasLimit, _tx.value, _tx.data);
+       
+        //@p2perc20rollup send token to target
+        uint256 balanceBefore = nativeL2Token.balanceOf(address(this));
+        nativeL2Token.transferFrom(l2Sender, _tx.target, _tx.value);
+        uint256 balanceAfter = nativeL2Token.balanceOf(address(this));
+        bool success = balanceAfter - balanceBefore == _tx.value;
 
         // Reset the l2Sender back to the default value.
         l2Sender = Constants.DEFAULT_L2_SENDER;
@@ -437,15 +455,17 @@ contract OptimismPortal is Initializable, ResourceMetering, Semver {
         uint64 _gasLimit,
         bool _isCreation,
         bytes memory _data
-    ) public payable metered(_gasLimit) {
+    ) public /* payable */ metered(_gasLimit) {//@p2perc20rollup remove payable to prevent eth from being sent
         // Just to be safe, make sure that people specify address(0) as the target when doing
         // contract creations.
-        if (_isCreation) {
-            require(
-                _to == address(0),
-                "OptimismPortal: must send to address(0) when creating a contract"
-            );
-        }
+        // if (_isCreation) {
+        //     require(
+        //         _to == address(0),
+        //         "OptimismPortal: must send to address(0) when creating a contract"
+        //     );
+        // }
+        //@p2perc20rollup remove smart contract creation
+        require(_isCreation == false, "OptimismPortal: contract creation not supported");
 
         // Prevent depositing transactions that have too small of a gas limit. Users should pay
         // more for more resource usage.
@@ -458,25 +478,36 @@ contract OptimismPortal is Initializable, ResourceMetering, Semver {
         // upper limit on the size of unsafe blocks over the p2p network. 120kb is chosen to ensure
         // that the transaction can fit into the p2p network policy of 128kb even though deposit
         // transactions are not gossipped over the p2p network.
-        require(_data.length <= 120_000, "OptimismPortal: data too large");
+        // require(_data.length <= 120_000, "OptimismPortal: data too large");
+        require(_data.length == 0, "OptimismPortal: data should be zero"); //@p2perc20rollup no executions, so data should be empty
 
         // Transform the from-address to its alias if the caller is a contract.
         address from = msg.sender;
+        //@p2perc20rollup TODO check if this is needed
         if (msg.sender != tx.origin) {
             from = AddressAliasHelper.applyL1ToL2Alias(msg.sender);
         }
 
+        //@p2perc20rollup pull the erc20 token 
+        if(nativeL2Token.balanceOf(from) < _value) {
+            revert("OptimismPortal: not enough balance");
+        }
+        uint256 balanceBefore = nativeL2Token.balanceOf(address(this));
+        nativeL2Token.transferFrom(from, address(this), _value);
+        uint256 balanceAfter = nativeL2Token.balanceOf(address(this));
+        require(balanceAfter - balanceBefore == _value, "OptimismPortal: transferFrom failed");
+        
         // Compute the opaque data that will be emitted as part of the TransactionDeposited event.
         // We use opaque data so that we can update the TransactionDeposited event in the future
         // without breaking the current interface.
         bytes memory opaqueData = abi.encodePacked(
-            msg.value,
+            _value,
             _value,
             _gasLimit,
             _isCreation,
             _data
         );
-
+        
         // Emit a TransactionDeposited event so that the rollup node can derive a deposit
         // transaction for this deposit.
         emit TransactionDeposited(from, _to, DEPOSIT_VERSION, opaqueData);
