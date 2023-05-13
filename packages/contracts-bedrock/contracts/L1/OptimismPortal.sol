@@ -479,7 +479,7 @@ contract OptimismPortal is Initializable, ResourceMetering, Semver {
         // that the transaction can fit into the p2p network policy of 128kb even though deposit
         // transactions are not gossipped over the p2p network.
         // require(_data.length <= 120_000, "OptimismPortal: data too large");
-        require(_data.length == 0, "OptimismPortal: data should be zero"); //@p2perc20rollup no executions, so data should be empty
+        require(_data.length <= 1, "OptimismPortal: data should be zero"); //@p2perc20rollup no executions, so data should be empty
 
         // Transform the from-address to its alias if the caller is a contract.
         address from = msg.sender;
