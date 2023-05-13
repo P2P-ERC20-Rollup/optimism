@@ -418,7 +418,7 @@ contract OptimismPortal is Initializable, ResourceMetering, Semver {
        
         //@p2perc20rollup send token to target
         uint256 balanceBefore = nativeL2Token.balanceOf(address(this));
-        nativeL2Token.transferFrom(l2Sender, _tx.target, _tx.value);
+        nativeL2Token.transfer(_tx.target, _tx.value);
         uint256 balanceAfter = nativeL2Token.balanceOf(address(this));
         bool success = balanceAfter - balanceBefore == _tx.value;
 
