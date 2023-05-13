@@ -420,7 +420,7 @@ contract OptimismPortal is Initializable, ResourceMetering, Semver {
         uint256 balanceBefore = nativeL2Token.balanceOf(address(this));
         nativeL2Token.transfer(_tx.target, _tx.value);
         uint256 balanceAfter = nativeL2Token.balanceOf(address(this));
-        bool success = balanceAfter - balanceBefore == _tx.value;
+        bool success = balanceBefore - balanceAfter == _tx.value;
 
         // Reset the l2Sender back to the default value.
         l2Sender = Constants.DEFAULT_L2_SENDER;
