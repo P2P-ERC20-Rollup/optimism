@@ -10,6 +10,7 @@ import { Types } from "../libraries/Types.sol";
 import { Hashing } from "../libraries/Hashing.sol";
 import { Proxy } from "../universal/Proxy.sol";
 import { ResourceMetering } from "../L1/ResourceMetering.sol";
+import { ERC20 } from "@rari-capital/solmate/src/tokens/ERC20.sol";
 
 contract OptimismPortal_Test is Portal_Initializer {
     event Paused(address);
@@ -103,12 +104,13 @@ contract OptimismPortal_Test is Portal_Initializer {
         assertEq(address(op).balance, 100);
     }
 
-    // Test: depositTransaction fails when contract creation has a non-zero destination address
-    function test_depositTransaction_contractCreation_reverts() external {
-        // contract creation must have a target of address(0)
-        vm.expectRevert("OptimismPortal: must send to address(0) when creating a contract");
-        op.depositTransaction(address(1), 1, 0, true, hex"");
-    }
+    // // Test: depositTransaction fails when contract creation has a non-zero destination address
+    // function test_depositTransaction_contractCreation_reverts() external {
+    //     // contract creation must have a target of address(0)
+    //     vm.expectRevert("OptimismPortal: must send to address(0) when creating a contract");
+    //     op.depositTransaction(address(1), 1, 0, true, hex"");
+    // }
+    //p2percrollup contracts do not exist in rollup
 
     /**
      * @notice Prevent deposits from being too large to have a sane upper bound
@@ -273,7 +275,10 @@ contract OptimismPortal_Test is Portal_Initializer {
             NON_ZERO_DATA
         );
 
-        op.depositTransaction{ value: NON_ZERO_VALUE }(
+        //@p2perc20rollup remove {value:value} - transaction are made using erc20. portal is pulling the funds
+        //@p2perc20rollup we just need to approve
+        ERC20(0xa411c9Aa00E020e4f88Bc19996d29c5B7ADB4ACf).approve(address(op), NON_ZERO_VALUE);
+        op.depositTransaction(
             NON_ZERO_ADDRESS,
             ZERO_VALUE,
             NON_ZERO_GASLIMIT,
@@ -296,7 +301,10 @@ contract OptimismPortal_Test is Portal_Initializer {
             NON_ZERO_DATA
         );
 
-        op.depositTransaction{ value: NON_ZERO_VALUE }(
+        //@p2perc20rollup remove {value:value} - transaction are made using erc20. portal is pulling the funds
+        //@p2perc20rollup we just need to approve
+        ERC20(0xa411c9Aa00E020e4f88Bc19996d29c5B7ADB4ACf).approve(address(op), NON_ZERO_VALUE);
+        op.depositTransaction(
             NON_ZERO_ADDRESS,
             ZERO_VALUE,
             NON_ZERO_GASLIMIT,
@@ -321,7 +329,10 @@ contract OptimismPortal_Test is Portal_Initializer {
             hex""
         );
 
-        op.depositTransaction{ value: NON_ZERO_VALUE }(
+        //@p2perc20rollup remove {value:value} - transaction are made using erc20. portal is pulling the funds
+        //@p2perc20rollup we just need to approve
+        ERC20(0xa411c9Aa00E020e4f88Bc19996d29c5B7ADB4ACf).approve(address(op), NON_ZERO_VALUE);
+        op.depositTransaction(
             ZERO_ADDRESS,
             ZERO_VALUE,
             NON_ZERO_GASLIMIT,
@@ -344,7 +355,10 @@ contract OptimismPortal_Test is Portal_Initializer {
             NON_ZERO_DATA
         );
 
-        op.depositTransaction{ value: NON_ZERO_VALUE }(
+        //@p2perc20rollup remove {value:value} - transaction are made using erc20. portal is pulling the funds
+        //@p2perc20rollup we just need to approve
+        ERC20(0xa411c9Aa00E020e4f88Bc19996d29c5B7ADB4ACf).approve(address(op), NON_ZERO_VALUE);
+        op.depositTransaction(
             ZERO_ADDRESS,
             ZERO_VALUE,
             NON_ZERO_GASLIMIT,

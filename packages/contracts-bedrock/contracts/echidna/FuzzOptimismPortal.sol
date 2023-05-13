@@ -6,6 +6,7 @@ import { AddressAliasHelper } from "../vendor/AddressAliasHelper.sol";
 import { SystemConfig } from "../L1/SystemConfig.sol";
 import { ResourceMetering } from "../L1/ResourceMetering.sol";
 import { Constants } from "../libraries/Constants.sol";
+import { ERC20 } from "@rari-capital/solmate/src/tokens/ERC20.sol";
 
 contract EchidnaFuzzOptimismPortal {
     OptimismPortal internal portal;
@@ -43,7 +44,10 @@ contract EchidnaFuzzOptimismPortal {
     ) public payable {
         failedToComplete = true;
         require(!_isCreation || _to == address(0), "EchidnaFuzzOptimismPortal: invalid test case.");
-        portal.depositTransaction{ value: _mint }(_to, _value, _gasLimit, _isCreation, _data);
+        //@p2perc20rollup remove {value:value} - transaction are made using erc20. portal is pulling the funds
+        //@p2perc20rollup we just need to approve
+        ERC20(0xa411c9Aa00E020e4f88Bc19996d29c5B7ADB4ACf).approve(address(portal), _mint);
+        portal.depositTransaction(_to, _value, _gasLimit, _isCreation, _data);
         failedToComplete = false;
     }
 

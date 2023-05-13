@@ -48,7 +48,8 @@ contract L1CrossDomainMessenger is CrossDomainMessenger, Semver {
         uint256 _value,
         bytes memory _data
     ) internal override {
-        PORTAL.depositTransaction{ value: _value }(_to, _value, _gasLimit, false, _data);
+        //@p2perc20rollup remove {value:value} - transaction are made using erc20. portal is pulling the funds
+        PORTAL.depositTransaction(_to, _value, _gasLimit, false, _data);
     }
 
     /**

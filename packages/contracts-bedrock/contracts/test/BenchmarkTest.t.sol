@@ -7,6 +7,7 @@ import { Vm } from "forge-std/Vm.sol";
 import "./CommonTest.t.sol";
 import { CrossDomainMessenger } from "../universal/CrossDomainMessenger.sol";
 import { ResourceMetering } from "../L1/ResourceMetering.sol";
+// import { ERC20 } from "@rari-capital/solmate/src/tokens/ERC20.sol";
 
 // Free function for setting the prevBaseFee param in the OptimismPortal.
 function setPrevBaseFee(
@@ -89,7 +90,10 @@ contract GasBenchMark_OptimismPortal is Portal_Initializer {
     }
 
     function test_depositTransaction_benchmark() external {
-        op.depositTransaction{ value: NON_ZERO_VALUE }(
+        //@p2perc20rollup remove {value:value} - transaction are made using erc20. portal is pulling the funds
+        //@p2perc20rollup we just need to approve
+        ERC20(0xa411c9Aa00E020e4f88Bc19996d29c5B7ADB4ACf).approve(address(op), NON_ZERO_VALUE);
+        op.depositTransaction(
             NON_ZERO_ADDRESS,
             ZERO_VALUE,
             NON_ZERO_GASLIMIT,
@@ -100,7 +104,10 @@ contract GasBenchMark_OptimismPortal is Portal_Initializer {
 
     function test_depositTransaction_benchmark_1() external {
         setPrevBaseFee(vm, address(op), 1 gwei);
-        op.depositTransaction{ value: NON_ZERO_VALUE }(
+        //@p2perc20rollup remove {value:value} - transaction are made using erc20. portal is pulling the funds
+        //@p2perc20rollup we just need to approve
+        ERC20(0xa411c9Aa00E020e4f88Bc19996d29c5B7ADB4ACf).approve(address(op), NON_ZERO_VALUE);
+        op.depositTransaction(
             NON_ZERO_ADDRESS,
             ZERO_VALUE,
             NON_ZERO_GASLIMIT,
