@@ -122,6 +122,11 @@ def main():
         'L2OO_ADDRESS': addresses['L2OutputOracleProxy'],
         'SEQUENCER_BATCH_INBOX_ADDRESS': rollup_config['batch_inbox_address']
     })
+    # run_command(['yarn', 'hardhat', '--network', 'devnetL2', 'deploy', '--tags', 'l2', '--reset'], env={
+    #         'CHAIN_ID': '901',
+    #         'L2_RPC': 'http://localhost:9545',
+    #         'PRIVATE_KEY_DEPLOYER': deployer_pk
+    # }, cwd=contracts_bedrock_dir)
 
     log.info('Devnet ready.')
 
