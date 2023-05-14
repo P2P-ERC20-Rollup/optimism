@@ -167,7 +167,7 @@ contract OptimismPortal is Initializable, ResourceMetering, Semver {
         initialize(_paused);
         //@p2perc20rollup set nativeL2Token to the ERC20 token that is native to L2
         //TODO set this dynamically
-        nativeL2Token = ERC20(0xa411c9Aa00E020e4f88Bc19996d29c5B7ADB4ACf);
+        nativeL2Token = ERC20(0x5FbDB2315678afecb367f032d93F642f64180aa3);
     }
 
     /**
