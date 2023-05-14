@@ -46,7 +46,7 @@ contract EchidnaFuzzOptimismPortal {
         require(!_isCreation || _to == address(0), "EchidnaFuzzOptimismPortal: invalid test case.");
         //@p2perc20rollup remove {value:value} - transaction are made using erc20. portal is pulling the funds
         //@p2perc20rollup we just need to approve
-        ERC20(0xa411c9Aa00E020e4f88Bc19996d29c5B7ADB4ACf).approve(address(portal), _mint);
+        ERC20(0x5FbDB2315678afecb367f032d93F642f64180aa3).approve(address(portal), _mint);
         portal.depositTransaction(_to, _value, _gasLimit, _isCreation, _data);
         failedToComplete = false;
     }
