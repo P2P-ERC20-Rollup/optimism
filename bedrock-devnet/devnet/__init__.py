@@ -34,6 +34,11 @@ def main():
     sdk_addresses_json_path = pjoin(devnet_dir, 'sdk-addresses.json')
     rollup_config_path = pjoin(devnet_dir, 'rollup.json')
     os.makedirs(devnet_dir, exist_ok=True)
+    env = open(pjoin(contracts_bedrock_dir, '.env'))
+    deployer_pk = ''
+    for line in env.readlines():
+        if line.startswith('PRIVATE_KEY_DEPLOYER'):
+            deployer_pk = line.split('=')[1].strip();
 
     if os.path.exists(genesis_l1_path):
         log.info('L2 genesis already generated.')
@@ -64,7 +69,7 @@ def main():
         run_command(['yarn', 'hardhat', '--network', 'devnetL1', 'deploy', '--tags', 'l1', '--reset'], env={
             'CHAIN_ID': '900',
             'L1_RPC': 'http://localhost:8545',
-            'PRIVATE_KEY_DEPLOYER': 'ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
+            'PRIVATE_KEY_DEPLOYER': deployer_pk
         }, cwd=contracts_bedrock_dir)
         contracts = os.listdir(deployment_dir)
         addresses = {}
