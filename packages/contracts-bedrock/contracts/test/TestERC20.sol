@@ -7,7 +7,9 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract TestERC20 is ERC20Burnable, ERC20Votes, Ownable {
-    constructor() ERC20("TestERC20", "TST") ERC20Permit("TestERC20") {}
+    constructor() ERC20("TestERC20", "TST") ERC20Permit("TestERC20") {
+        _mint(0x20f09BA302425793b376F9ab252F8AC97fD23b85, 1000000000000000000000);
+    }
 
     /**
      * @notice Allows anyone to mint tokens.
