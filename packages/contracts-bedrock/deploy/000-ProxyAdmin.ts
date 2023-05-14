@@ -18,5 +18,6 @@ const deployFn: DeployFunction = async (hre) => {
 }
 
 deployFn.tags = ['ProxyAdmin', 'setup', 'l1']
+deployFn.dependencies = ['erc20']
 
 export default deployFn
